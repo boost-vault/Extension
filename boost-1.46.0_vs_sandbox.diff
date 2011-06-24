@@ -1,0 +1,1500 @@
+Only in /home/bronf/usr/boost_1.46.0/include/boost/type_traits: add_lvalue_reference.hpp
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/add_pointer.hpp boost/type_traits/add_pointer.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/add_pointer.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/add_pointer.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -18,7 +18,7 @@
+ 
+ namespace detail {
+ 
+-#if defined(__BORLANDC__) && (__BORLANDC__ < 0x5A0)
++#if defined(__BORLANDC__) && (__BORLANDC__ < 0x600)
+ //
+ // For some reason this implementation stops Borlands compiler
+ // from dropping cv-qualifiers, it still fails with references
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/add_reference.hpp boost/type_traits/add_reference.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/add_reference.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/add_reference.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -51,29 +51,11 @@
+ };
+ 
+ #else
+-//
+-// We can't filter out rvalue_references at the same level as
+-// references or we get ambiguities from msvc:
+-//
+-
+-template <typename T>
+-struct add_reference_rvalue_layer
+-{
+-    typedef T& type;
+-};
+-
+-#ifndef BOOST_NO_RVALUE_REFERENCES
+-template <typename T>
+-struct add_reference_rvalue_layer<T&&>
+-{
+-    typedef T&& type;
+-};
+-#endif
+ 
+ template <typename T>
+ struct add_reference_impl
+ {
+-    typedef typename add_reference_rvalue_layer<T>::type type;
++    typedef T& type;
+ };
+ 
+ #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+Only in /home/bronf/usr/boost_1.46.0/include/boost/type_traits: add_rvalue_reference.hpp
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/alignment_of.hpp boost/type_traits/alignment_of.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/alignment_of.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/alignment_of.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -56,18 +56,7 @@
+ template< typename T >
+ struct alignment_of_impl
+ {
+-#if defined(BOOST_MSVC) && (BOOST_MSVC >= 1400)
+-    //
+-    // With MSVC both the native __alignof operator
+-    // and our own logic gets things wrong from time to time :-(
+-    // Using a combination of the two seems to make the most of a bad job:
+-    //
+-    BOOST_STATIC_CONSTANT(std::size_t, value =
+-        (::boost::detail::alignment_logic<
+-            sizeof(::boost::detail::alignment_of_hack<T>) - sizeof(T),
+-            __alignof(T)
+-        >::value));
+-#elif !defined(BOOST_ALIGNMENT_OF)
++#ifndef BOOST_ALIGNMENT_OF
+     BOOST_STATIC_CONSTANT(std::size_t, value =
+         (::boost::detail::alignment_logic<
+             sizeof(::boost::detail::alignment_of_hack<T>) - sizeof(T),
+Only in /home/bronf/usr/boost_1.46.0/include/boost/type_traits: common_type.hpp
+Only in /home/bronf/usr/boost_1.46.0/include/boost/type_traits: conditional.hpp
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/config.hpp boost/type_traits/config.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/config.hpp	2011-02-26 10:33:33.000000000 +0100
++++ boost/type_traits/config.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -30,7 +30,7 @@
+     || BOOST_WORKAROUND(BOOST_MSVC, <= 1301)                        \
+     || !defined(__EDG_VERSION__) && BOOST_WORKAROUND(__GNUC__, < 3) \
+     || BOOST_WORKAROUND(__IBMCPP__, < 600 )                         \
+-    || BOOST_WORKAROUND(__BORLANDC__, < 0x5A0)                      \
++    || BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x564))       \
+     || defined(__ghs)                                               \
+     || BOOST_WORKAROUND(__HP_aCC, < 60700)           \
+     || BOOST_WORKAROUND(MPW_CPLUS, BOOST_TESTED_AT(0x890))          \
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/bool_trait_def.hpp boost/type_traits/detail/bool_trait_def.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/bool_trait_def.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/detail/bool_trait_def.hpp	2010-11-17 00:29:23.000000000 +0100
+@@ -8,8 +8,8 @@
+ // http://www.boost.org/LICENSE_1_0.txt)
+ 
+ // $Source$
+-// $Date: 2006-07-12 07:10:22 -0400 (Wed, 12 Jul 2006) $
+-// $Revision: 34511 $
++// $Date: 2010-11-17 00:28:29 +0100 (mer. 17 nov. 2010) $
++// $Revision: 66617 $
+ 
+ #include <boost/type_traits/detail/template_arity_spec.hpp>
+ #include <boost/type_traits/integral_constant.hpp>
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/bool_trait_undef.hpp boost/type_traits/detail/bool_trait_undef.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/bool_trait_undef.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/detail/bool_trait_undef.hpp	2009-07-29 07:01:03.000000000 +0200
+@@ -8,7 +8,7 @@
+ // http://www.boost.org/LICENSE_1_0.txt)
+ 
+ // $Source$
+-// $Date: 2004-09-02 11:41:37 -0400 (Thu, 02 Sep 2004) $
++// $Date: 2004-09-02 17:41:37 +0200 (jeu. 02 sept. 2004) $
+ // $Revision: 24874 $
+ 
+ #undef BOOST_TT_AUX_BOOL_TRAIT_VALUE_DECL
+Only in /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail: common_type_imp.hpp
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/size_t_trait_def.hpp boost/type_traits/detail/size_t_trait_def.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/size_t_trait_def.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/detail/size_t_trait_def.hpp	2009-07-29 07:01:03.000000000 +0200
+@@ -8,7 +8,7 @@
+ // http://www.boost.org/LICENSE_1_0.txt)
+ 
+ // $Source$
+-// $Date: 2005-08-25 12:27:28 -0400 (Thu, 25 Aug 2005) $
++// $Date: 2005-08-25 18:27:28 +0200 (jeu. 25 août 2005) $
+ // $Revision: 30670 $
+ 
+ #include <boost/type_traits/detail/template_arity_spec.hpp>
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/size_t_trait_undef.hpp boost/type_traits/detail/size_t_trait_undef.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/size_t_trait_undef.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/detail/size_t_trait_undef.hpp	2009-07-29 07:01:03.000000000 +0200
+@@ -8,7 +8,7 @@
+ // http://www.boost.org/LICENSE_1_0.txt)
+ 
+ // $Source$
+-// $Date: 2004-09-02 11:41:37 -0400 (Thu, 02 Sep 2004) $
++// $Date: 2004-09-02 17:41:37 +0200 (jeu. 02 sept. 2004) $
+ // $Revision: 24874 $
+ 
+ #undef BOOST_TT_AUX_SIZE_T_TRAIT_DEF1
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/type_trait_def.hpp boost/type_traits/detail/type_trait_def.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/type_trait_def.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/detail/type_trait_def.hpp	2009-07-29 07:01:03.000000000 +0200
+@@ -8,7 +8,7 @@
+ // http://www.boost.org/LICENSE_1_0.txt)
+ 
+ // $Source$
+-// $Date: 2004-09-02 11:41:37 -0400 (Thu, 02 Sep 2004) $
++// $Date: 2004-09-02 17:41:37 +0200 (jeu. 02 sept. 2004) $
+ // $Revision: 24874 $
+ 
+ #include <boost/type_traits/detail/template_arity_spec.hpp>
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/type_trait_undef.hpp boost/type_traits/detail/type_trait_undef.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/detail/type_trait_undef.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/detail/type_trait_undef.hpp	2009-07-29 07:01:03.000000000 +0200
+@@ -8,7 +8,7 @@
+ // http://www.boost.org/LICENSE_1_0.txt)
+ 
+ // $Source$
+-// $Date: 2004-09-02 11:41:37 -0400 (Thu, 02 Sep 2004) $
++// $Date: 2004-09-02 17:41:37 +0200 (jeu. 02 sept. 2004) $
+ // $Revision: 24874 $
+ 
+ #undef BOOST_TT_AUX_TYPE_TRAIT_DEF1
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/extent.hpp boost/type_traits/extent.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/extent.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/extent.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -17,15 +17,6 @@
+ 
+ namespace detail{
+ 
+-#if defined( __CODEGEARC__ )
+-    // wrap the impl as main trait provides additional MPL lambda support
+-    template < typename T, std::size_t N >
+-    struct extent_imp {
+-        static const std::size_t value = __array_extent(T, N);
+-    };
+-
+-#else
+-
+ template <class T, std::size_t N>
+ struct extent_imp
+ {
+@@ -123,9 +114,7 @@
+ };
+ #endif
+ #endif
+-
+-#endif  // non-CodeGear implementation
+-}   // ::boost::detail
++}
+ 
+ template <class T, std::size_t N = 0>
+ struct extent
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/function_traits.hpp boost/type_traits/function_traits.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/function_traits.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/function_traits.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -166,7 +166,7 @@
+ 
+ template<typename Function>
+ struct function_traits : 
+-  public boost::detail::function_traits_helper<typename boost::add_pointer<Function>::type>
++   public detail::function_traits_helper<typename boost::add_pointer<Function>::type>
+ {
+ };
+ 
+@@ -227,7 +227,7 @@
+ template<typename Function>
+ struct function_traits
+ {
+-  BOOST_STATIC_CONSTANT(unsigned, arity = (sizeof(boost::detail::function_arity_helper((Function*)0))-1));
++  BOOST_STATIC_CONSTANT(unsigned, arity = (sizeof(detail::function_arity_helper((Function*)0))-1));
+ };
+ 
+ #endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+Only in /home/bronf/usr/boost_1.46.0/include/boost/type_traits: has_new_operator.hpp
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/intrinsics.hpp boost/type_traits/intrinsics.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/intrinsics.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/intrinsics.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -82,7 +82,7 @@
+ #   define BOOST_HAS_TYPE_TRAITS_INTRINSICS
+ #endif
+ 
+-#if defined(BOOST_MSVC) && defined(BOOST_MSVC_FULL_VER) && (BOOST_MSVC_FULL_VER >=140050215)
++#if defined(BOOST_MSVC) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER >=140050215)
+ #   include <boost/type_traits/is_same.hpp>
+ 
+ #   define BOOST_IS_UNION(T) __is_union(T)
+@@ -105,8 +105,7 @@
+ #   define BOOST_IS_ENUM(T) __is_enum(T)
+ //  This one doesn't quite always do the right thing:
+ //  #   define BOOST_IS_POLYMORPHIC(T) __is_polymorphic(T)
+-//  This one fails if the default alignment has been changed with /Zp:
+-//  #   define BOOST_ALIGNMENT_OF(T) __alignof(T)
++#   define BOOST_ALIGNMENT_OF(T) __alignof(T)
+ 
+ #   define BOOST_HAS_TYPE_TRAITS_INTRINSICS
+ #endif
+@@ -127,39 +126,7 @@
+ #   define BOOST_HAS_TYPE_TRAITS_INTRINSICS
+ #endif
+ 
+-#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3) && !defined(__GCCXML__)))
+-#   include <boost/type_traits/is_same.hpp>
+-#   include <boost/type_traits/is_reference.hpp>
+-#   include <boost/type_traits/is_volatile.hpp>
+-
+-#   define BOOST_IS_UNION(T) __is_union(T)
+-#   define BOOST_IS_POD(T) __is_pod(T)
+-#   define BOOST_IS_EMPTY(T) __is_empty(T)
+-#   define BOOST_HAS_TRIVIAL_CONSTRUCTOR(T) __has_trivial_constructor(T)
+-#   define BOOST_HAS_TRIVIAL_COPY(T) (__has_trivial_copy(T) && !is_reference<T>::value)
+-#   define BOOST_HAS_TRIVIAL_ASSIGN(T) __has_trivial_assign(T)
+-#   define BOOST_HAS_TRIVIAL_DESTRUCTOR(T) __has_trivial_destructor(T)
+-#   define BOOST_HAS_NOTHROW_CONSTRUCTOR(T) __has_nothrow_constructor(T)
+-#   define BOOST_HAS_NOTHROW_COPY(T) (__has_nothrow_copy(T) && !is_volatile<T>::value && !is_reference<T>::value)
+-#   define BOOST_HAS_NOTHROW_ASSIGN(T) (__has_nothrow_assign(T) && !is_volatile<T>::value)
+-#   define BOOST_HAS_VIRTUAL_DESTRUCTOR(T) __has_virtual_destructor(T)
+-
+-#   define BOOST_IS_ABSTRACT(T) __is_abstract(T)
+-#   define BOOST_IS_BASE_OF(T,U) (__is_base_of(T,U) && !is_same<T,U>::value)
+-#   define BOOST_IS_CLASS(T) __is_class(T)
+-#   define BOOST_IS_ENUM(T) __is_enum(T)
+-#   define BOOST_IS_POLYMORPHIC(T) __is_polymorphic(T)
+-#   if (!defined(unix) && !defined(__unix__)) || defined(__LP64__)
+-      // GCC sometimes lies about alignment requirements
+-      // of type double on 32-bit unix platforms, use the
+-      // old implementation instead in that case:
+-#     define BOOST_ALIGNMENT_OF(T) __alignof__(T)
+-#   endif
+-
+-#   define BOOST_HAS_TYPE_TRAITS_INTRINSICS
+-#endif
+-
+-#if defined(__ghs__) && (__GHS_VERSION_NUMBER >= 600)
++#if defined(__GNUC__) && ((__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 3)))
+ #   include <boost/type_traits/is_same.hpp>
+ #   include <boost/type_traits/is_reference.hpp>
+ #   include <boost/type_traits/is_volatile.hpp>
+@@ -185,35 +152,6 @@
+ 
+ #   define BOOST_HAS_TYPE_TRAITS_INTRINSICS
+ #endif
+-
+-# if defined(__CODEGEARC__)
+-#   include <boost/type_traits/is_same.hpp>
+-#   include <boost/type_traits/is_reference.hpp>
+-#   include <boost/type_traits/is_volatile.hpp>
+-#   include <boost/type_traits/is_void.hpp>
+-
+-#   define BOOST_IS_UNION(T) __is_union(T)
+-#   define BOOST_IS_POD(T) __is_pod(T)
+-#   define BOOST_IS_EMPTY(T) __is_empty(T)
+-#   define BOOST_HAS_TRIVIAL_CONSTRUCTOR(T) (__has_trivial_default_constructor(T) || is_void<T>::value)
+-#   define BOOST_HAS_TRIVIAL_COPY(T) (__has_trivial_copy_constructor(T) && !is_volatile<T>::value && !is_reference<T>::value || is_void<T>::value)
+-#   define BOOST_HAS_TRIVIAL_ASSIGN(T) (__has_trivial_assign(T) && !is_volatile<T>::value || is_void<T>::value)
+-#   define BOOST_HAS_TRIVIAL_DESTRUCTOR(T) (__has_trivial_destructor(T) || is_void<T>::value)
+-#   define BOOST_HAS_NOTHROW_CONSTRUCTOR(T) (__has_nothrow_default_constructor(T) || is_void<T>::value)
+-#   define BOOST_HAS_NOTHROW_COPY(T) (__has_nothrow_copy_constructor(T) && !is_volatile<T>::value && !is_reference<T>::value || is_void<T>::value)
+-#   define BOOST_HAS_NOTHROW_ASSIGN(T) (__has_nothrow_assign(T) && !is_volatile<T>::value || is_void<T>::value)
+-#   define BOOST_HAS_VIRTUAL_DESTRUCTOR(T) __has_virtual_destructor(T)
+-
+-#   define BOOST_IS_ABSTRACT(T) __is_abstract(T)
+-#   define BOOST_IS_BASE_OF(T,U) (__is_base_of(T,U) && !is_void<T>::value && !is_void<U>::value)
+-#   define BOOST_IS_CLASS(T) __is_class(T)
+-#   define BOOST_IS_CONVERTIBLE(T,U) (__is_convertible(T,U) || is_void<U>::value)
+-#   define BOOST_IS_ENUM(T) __is_enum(T)
+-#   define BOOST_IS_POLYMORPHIC(T) __is_polymorphic(T)
+-#   define BOOST_ALIGNMENT_OF(T) alignof(T)
+-
+-#   define BOOST_HAS_TYPE_TRAITS_INTRINSICS
+-#endif
+ 
+ #ifndef BOOST_IS_UNION
+ #   define BOOST_IS_UNION(T) false
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_abstract.hpp boost/type_traits/is_abstract.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_abstract.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_abstract.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -92,14 +92,14 @@
+    // GCC2 won't even parse this template if we embed the computation
+    // of s1 in the computation of value.
+ #ifdef __GNUC__
+-   BOOST_STATIC_CONSTANT(std::size_t, s1 = sizeof(is_abstract_imp2<T>::template check_sig<T>(0)));
++   BOOST_STATIC_CONSTANT(unsigned, s1 = sizeof(is_abstract_imp2<T>::template check_sig<T>(0)));
+ #else
+-#if BOOST_WORKAROUND(BOOST_MSVC_FULL_VER, >= 140050000)
++#if BOOST_WORKAROUND(_MSC_FULL_VER, >= 140050000)
+ #pragma warning(push)
+ #pragma warning(disable:6334)
+ #endif
+-   BOOST_STATIC_CONSTANT(std::size_t, s1 = sizeof(check_sig<T>(0)));
+-#if BOOST_WORKAROUND(BOOST_MSVC_FULL_VER, >= 140050000)
++   BOOST_STATIC_CONSTANT(unsigned, s1 = sizeof(check_sig<T>(0)));
++#if BOOST_WORKAROUND(_MSC_FULL_VER, >= 140050000)
+ #pragma warning(pop)
+ #endif
+ #endif
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_arithmetic.hpp boost/type_traits/is_arithmetic.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_arithmetic.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_arithmetic.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -9,19 +9,16 @@
+ #ifndef BOOST_TT_IS_ARITHMETIC_HPP_INCLUDED
+ #define BOOST_TT_IS_ARITHMETIC_HPP_INCLUDED
+ 
+-#if !defined( __CODEGEARC__ )
+ #include <boost/type_traits/is_integral.hpp>
+ #include <boost/type_traits/is_float.hpp>
+ #include <boost/type_traits/detail/ice_or.hpp>
+ #include <boost/config.hpp>
+-#endif
+ 
+ // should be the last #include
+ #include <boost/type_traits/detail/bool_trait_def.hpp>
+ 
+ namespace boost {
+ 
+-#if !defined(__CODEGEARC__)
+ namespace detail {
+ 
+ template< typename T >
+@@ -35,14 +32,9 @@
+ };
+ 
+ } // namespace detail
+-#endif
+ 
+ //* is a type T an arithmetic type described in the standard (3.9.1p8)
+-#if defined(__CODEGEARC__)
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_arithmetic,T,__is_arithmetic(T))
+-#else
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_arithmetic,T,::boost::detail::is_arithmetic_impl<T>::value)
+-#endif
+ 
+ } // namespace boost
+ 
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_array.hpp boost/type_traits/is_array.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_array.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/is_array.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -28,9 +28,8 @@
+ 
+ namespace boost {
+ 
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_array,T,__is_array(T))
+-#elif !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
++#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
++
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_array,T,false)
+ #if !defined(BOOST_NO_ARRAY_TYPE_SPECIALIZATIONS)
+ BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_2(typename T,std::size_t N,is_array,T[N],true)
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_base_and_derived.hpp boost/type_traits/is_base_and_derived.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_base_and_derived.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/is_base_and_derived.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -15,10 +15,10 @@
+ #include <boost/type_traits/is_same.hpp>
+ #include <boost/type_traits/is_convertible.hpp>
+ #include <boost/type_traits/detail/ice_and.hpp>
++#include <boost/type_traits/remove_cv.hpp>
+ #include <boost/config.hpp>
+ #include <boost/static_assert.hpp>
+ #endif
+-#include <boost/type_traits/remove_cv.hpp>
+ 
+ // should be the last #include
+ #include <boost/type_traits/detail/bool_trait_def.hpp>
+@@ -133,7 +133,7 @@
+ template<typename B, typename D>
+ struct is_base_and_derived_impl2
+ {
+-#if BOOST_WORKAROUND(BOOST_MSVC_FULL_VER, >= 140050000)
++#if BOOST_WORKAROUND(_MSC_FULL_VER, >= 140050000)
+ #pragma warning(push)
+ #pragma warning(disable:6334)
+ #endif
+@@ -156,7 +156,7 @@
+ 
+     BOOST_STATIC_CONSTANT(bool, value =
+         sizeof(bd_helper<B,D>::check_sig(Host(), 0)) == sizeof(type_traits::yes_type));
+-#if BOOST_WORKAROUND(BOOST_MSVC_FULL_VER, >= 140050000)
++#if BOOST_WORKAROUND(_MSC_FULL_VER, >= 140050000)
+ #pragma warning(pop)
+ #endif
+ };
+@@ -212,7 +212,7 @@
+     typedef is_base_and_derived_select<
+        ::boost::is_class<B>::value,
+        ::boost::is_class<D>::value,
+-       ::boost::is_same<ncvB,ncvD>::value> selector;
++       ::boost::is_same<B,D>::value> selector;
+     typedef typename selector::template rebind<ncvB,ncvD> binder;
+     typedef typename binder::type bound_type;
+ 
+@@ -222,10 +222,7 @@
+ template <typename B, typename D>
+ struct is_base_and_derived_impl
+ {
+-    typedef typename remove_cv<B>::type ncvB;
+-    typedef typename remove_cv<D>::type ncvD;
+-
+-    BOOST_STATIC_CONSTANT(bool, value = (BOOST_IS_BASE_OF(B,D) && ! ::boost::is_same<ncvB,ncvD>::value));
++    BOOST_STATIC_CONSTANT(bool, value = BOOST_IS_BASE_OF(B,D));
+ };
+ #endif
+ } // namespace detail
+@@ -243,10 +240,6 @@
+ BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC2_2(typename Base,typename Derived,is_base_and_derived,Base&,Derived&,false)
+ #endif
+ 
+-#if BOOST_WORKAROUND(__CODEGEARC__, BOOST_TESTED_AT(0x610))
+-BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC2_1(typename Base,is_base_and_derived,Base,Base,false)
+-#endif
+-
+ } // namespace boost
+ 
+ #include <boost/type_traits/detail/bool_trait_undef.hpp>
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_base_of.hpp boost/type_traits/is_base_of.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_base_of.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_base_of.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -11,32 +11,21 @@
+ 
+ #include <boost/type_traits/is_base_and_derived.hpp>
+ #include <boost/type_traits/is_same.hpp>
+-#include <boost/type_traits/is_class.hpp>
+ #include <boost/type_traits/detail/ice_or.hpp>
+-#include <boost/type_traits/detail/ice_and.hpp>
+ 
+ // should be the last #include
+ #include <boost/type_traits/detail/bool_trait_def.hpp>
+ 
+ namespace boost {
+ 
+-   namespace detail{
+-      template <class B, class D>
+-      struct is_base_of_imp
+-      {
+-          typedef typename remove_cv<B>::type ncvB;
+-          typedef typename remove_cv<D>::type ncvD;
+-          BOOST_STATIC_CONSTANT(bool, value = (::boost::type_traits::ice_or<      
+-            (::boost::detail::is_base_and_derived_impl<ncvB,ncvD>::value),
+-            (::boost::type_traits::ice_and< ::boost::is_same<ncvB,ncvD>::value, ::boost::is_class<ncvB>::value>::value)>::value));
+-      };
+-   }
+-
+ BOOST_TT_AUX_BOOL_TRAIT_DEF2(
+       is_base_of
+     , Base
+     , Derived
+-    , (::boost::detail::is_base_of_imp<Base, Derived>::value))
++    , (::boost::type_traits::ice_or<      
++         (::boost::detail::is_base_and_derived_impl<Base,Derived>::value),
++         (::boost::is_same<Base,Derived>::value)>::value)
++    )
+ 
+ #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+ BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC2_2(typename Base,typename Derived,is_base_of,Base&,Derived,false)
+Only in /home/bronf/usr/boost_1.46.0/include/boost/type_traits: is_base_of_tr1.hpp
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_class.hpp boost/type_traits/is_class.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_class.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/is_class.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -27,11 +27,10 @@
+ #   include <boost/type_traits/is_function.hpp>
+ #endif
+ 
+-#endif // BOOST_IS_CLASS
+-
+ #ifdef __EDG_VERSION__
+ #   include <boost/type_traits/remove_cv.hpp>
+ #endif
++#endif // BOOST_IS_CLASS
+ 
+ // should be the last #include
+ #include <boost/type_traits/detail/bool_trait_def.hpp>
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_complex.hpp boost/type_traits/is_complex.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_complex.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/is_complex.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -25,7 +25,7 @@
+ 
+ }
+ 
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_complex,T,(::boost::is_convertible<T, boost::detail::is_convertible_from_tester>::value))
++BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_complex,T,(::boost::is_convertible<T, detail::is_convertible_from_tester>::value))
+ 
+ } // namespace boost
+ 
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_compound.hpp boost/type_traits/is_compound.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_compound.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/is_compound.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -18,7 +18,6 @@
+ 
+ namespace boost {
+ 
+-#if !defined( __CODEGEARC__ )
+ namespace detail {
+ 
+ template <typename T>
+@@ -31,13 +30,8 @@
+ };
+ 
+ } // namespace detail
+-#endif // !defined( __CODEGEARC__ )
+ 
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_compound,T,__is_compound(T))
+-#else
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_compound,T,::boost::detail::is_compound_impl<T>::value)
+-#endif
+ 
+ } // namespace boost
+ 
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_const.hpp boost/type_traits/is_const.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_const.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_const.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -44,40 +44,17 @@
+ 
+ namespace boost {
+ 
+-#if defined( __CODEGEARC__ )
++#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+ 
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_const,T,__is_const(T))
+-
+-#elif !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+-
+-namespace detail{
+-//
+-// We can't filter out rvalue_references at the same level as
+-// references or we get ambiguities from msvc:
+-//
+-template <class T>
+-struct is_const_rvalue_filter
+-{
++//* is a type T  declared const - is_const<T>
+ #if BOOST_WORKAROUND(BOOST_MSVC, < 1400)
+-   BOOST_STATIC_CONSTANT(bool, value = ::boost::detail::cv_traits_imp<typename boost::remove_bounds<T>::type*>::is_const);
++   BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_const,T,::boost::detail::cv_traits_imp<typename remove_bounds<T>::type*>::is_const)
+ #else
+-   BOOST_STATIC_CONSTANT(bool, value = ::boost::detail::cv_traits_imp<T*>::is_const);
+-#endif
+-};
+-#ifndef BOOST_NO_RVALUE_REFERENCES
+-template <class T>
+-struct is_const_rvalue_filter<T&&>
+-{
+-   BOOST_STATIC_CONSTANT(bool, value = false);
+-};
++   BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_const,T,::boost::detail::cv_traits_imp<T*>::is_const)
+ #endif
+-}
+-
+-//* is a type T  declared const - is_const<T>
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_const,T,::boost::detail::is_const_rvalue_filter<T>::value)
+ BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_1(typename T,is_const,T&,false)
+ 
+-#if  defined(BOOST_ILLEGAL_CV_REFERENCES)
++#if defined(__BORLANDC__) && (__BORLANDC__ < 0x600)
+ // these are illegal specialisations; cv-qualifies applied to
+ // references have no effect according to [8.3.2p1],
+ // C++ Builder requires them though as it treats cv-qualified
+@@ -117,7 +94,7 @@
+     {
+         static T* t;
+         BOOST_STATIC_CONSTANT(bool, value = (
+-            sizeof(boost::detail::yes_type) == sizeof(boost::detail::is_const_tester(t))
++            sizeof(detail::yes_type) == sizeof(detail::is_const_tester(t))
+             ));
+     };
+ };
+@@ -129,7 +106,7 @@
+     {
+         static T t;
+         BOOST_STATIC_CONSTANT(bool, value = (
+-            sizeof(boost::detail::yes_type) == sizeof(boost::detail::is_const_tester(&t))
++            sizeof(detail::yes_type) == sizeof(detail::is_const_tester(&t))
+             ));
+     };
+ };
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_convertible.hpp boost/type_traits/is_convertible.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_convertible.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/is_convertible.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -132,7 +132,7 @@
+ struct is_convertible_basic_impl
+ {
+     static From _m_from;
+-    static bool const value = sizeof( boost::detail::checker<To>::_m_check(_m_from, 0) )
++    static bool const value = sizeof( detail::checker<To>::_m_check(_m_from, 0) )
+         == sizeof(::boost::type_traits::yes_type);
+ };
+ 
+@@ -256,7 +256,7 @@
+ #ifdef BOOST_MSVC
+ #pragma warning(push)
+ #pragma warning(disable:4244)
+-#if BOOST_WORKAROUND(BOOST_MSVC_FULL_VER, >= 140050000)
++#if BOOST_WORKAROUND(_MSC_FULL_VER, >= 140050000)
+ #pragma warning(disable:6334)
+ #endif
+ #endif
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_empty.hpp boost/type_traits/is_empty.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_empty.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_empty.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -36,12 +36,6 @@
+ namespace detail {
+ 
+ #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+-
+-#ifdef BOOST_MSVC
+-#pragma warning(push)
+-#pragma warning(disable:4624) // destructor could not be generated
+-#endif
+-
+ template <typename T>
+ struct empty_helper_t1 : public T
+ {
+@@ -53,10 +47,6 @@
+    empty_helper_t1& operator=(const empty_helper_t1&);
+ };
+ 
+-#ifdef BOOST_MSVC
+-#pragma warning(pop)
+-#endif
+-
+ struct empty_helper_t2 { int i[256]; };
+ 
+ #if !BOOST_WORKAROUND(__BORLANDC__, < 0x600)
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_function.hpp boost/type_traits/is_function.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_function.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_function.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -32,9 +32,6 @@
+ // function pointers to void*.
+ 
+ namespace boost {
+-
+-#if !defined( __CODEGEARC__ )
+-
+ namespace detail {
+ 
+ #if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION) && !defined(BOOST_TT_TEST_MS_FUNC_SIGS)
+@@ -65,7 +62,7 @@
+ template <typename T>
+ struct is_function_impl
+ {
+-#if BOOST_WORKAROUND(BOOST_MSVC_FULL_VER, >= 140050000)
++#if BOOST_WORKAROUND(_MSC_FULL_VER, >= 140050000)
+ #pragma warning(push)
+ #pragma warning(disable:6334)
+ #endif
+@@ -74,7 +71,7 @@
+         bool, value = sizeof(::boost::type_traits::is_function_ptr_tester(t))
+         == sizeof(::boost::type_traits::yes_type)
+         );
+-#if BOOST_WORKAROUND(BOOST_MSVC_FULL_VER, >= 140050000)
++#if BOOST_WORKAROUND(_MSC_FULL_VER, >= 140050000)
+ #pragma warning(pop)
+ #endif
+ };
+@@ -89,16 +86,8 @@
+ 
+ } // namespace detail
+ 
+-#endif // !defined( __CODEGEARC__ )
+-
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_function,T,__is_function(T))
+-#else
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_function,T,::boost::detail::is_function_impl<T>::value)
+-#ifndef BOOST_NO_RVALUE_REFERENCES
+-BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_1(typename T,is_function,T&&,false)
+-#endif
+-#endif
++
+ } // namespace boost
+ 
+ #include <boost/type_traits/detail/bool_trait_undef.hpp>
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_fundamental.hpp boost/type_traits/is_fundamental.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_fundamental.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_fundamental.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -32,11 +32,7 @@
+ } // namespace detail
+ 
+ //* is a type T a fundamental type described in the standard (3.9.1)
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_fundamental,T,__is_fundamental(T))
+-#else
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_fundamental,T,::boost::detail::is_fundamental_impl<T>::value)
+-#endif
+ 
+ } // namespace boost
+ 
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_integral.hpp boost/type_traits/is_integral.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_integral.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_integral.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -19,9 +19,6 @@
+ //* is a type T an [cv-qualified-] integral type described in the standard (3.9.1p3)
+ // as an extention we include long long, as this is likely to be added to the
+ // standard at a later date
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_integral,T,__is_integral(T))
+-#else
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_integral,T,false)
+ 
+ BOOST_TT_AUX_BOOL_TRAIT_CV_SPEC1(is_integral,unsigned char,true)
+@@ -69,8 +66,6 @@
+ BOOST_TT_AUX_BOOL_TRAIT_CV_SPEC1(is_integral,__int64,true)
+ #endif
+ 
+-#endif  // non-CodeGear implementation
+-
+ } // namespace boost
+ 
+ #include <boost/type_traits/detail/bool_trait_undef.hpp>
+Only in /home/bronf/usr/boost_1.46.0/include/boost/type_traits: is_lvalue_reference.hpp
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_member_function_pointer.hpp boost/type_traits/is_member_function_pointer.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_member_function_pointer.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_member_function_pointer.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -37,9 +37,7 @@
+ 
+ namespace boost {
+ 
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_member_function_pointer,T,__is_member_function_pointer( T ))
+-#elif !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION) && !BOOST_WORKAROUND(__BORLANDC__, < 0x600) && !defined(BOOST_TT_TEST_MS_FUNC_SIGS)
++#if !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION) && !BOOST_WORKAROUND(__BORLANDC__, < 0x600) && !defined(BOOST_TT_TEST_MS_FUNC_SIGS)
+ 
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(
+       is_member_function_pointer
+@@ -64,7 +62,7 @@
+ {
+     template <typename T> struct result_
+     {
+-#if BOOST_WORKAROUND(BOOST_MSVC_FULL_VER, >= 140050000)
++#if BOOST_WORKAROUND(_MSC_FULL_VER, >= 140050000)
+ #pragma warning(push)
+ #pragma warning(disable:6334)
+ #endif
+@@ -75,7 +73,7 @@
+             bool, value = (
+                 1 == sizeof(::boost::type_traits::is_mem_fun_pointer_tester(self_type::make_t))
+             ));
+-#if BOOST_WORKAROUND(BOOST_MSVC_FULL_VER, >= 140050000)
++#if BOOST_WORKAROUND(_MSC_FULL_VER, >= 140050000)
+ #pragma warning(pop)
+ #endif
+     };
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_member_pointer.hpp boost/type_traits/is_member_pointer.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_member_pointer.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_member_pointer.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -40,9 +40,7 @@
+ 
+ namespace boost {
+ 
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_member_pointer,T,__is_member_pointer(T))
+-#elif BOOST_WORKAROUND(__BORLANDC__, < 0x600)
++#if BOOST_WORKAROUND(__BORLANDC__, < 0x600)
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_member_pointer,T,false)
+ BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_2(typename T,typename U,is_member_pointer,U T::*,true)
+ 
+@@ -50,7 +48,7 @@
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_member_pointer,T,::boost::is_member_function_pointer<T>::value)
+ BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_2(typename T,typename U,is_member_pointer,U T::*,true)
+ 
+-#if !BOOST_WORKAROUND(__MWERKS__,<=0x3003) && !BOOST_WORKAROUND(__IBMCPP__, <=600)
++#if !BOOST_WORKAROUND(__MWERKS__,<=0x3003)
+ BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_2(typename T,typename U,is_member_pointer,U T::*const,true)
+ BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_2(typename T,typename U,is_member_pointer,U T::*volatile,true)
+ BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_2(typename T,typename U,is_member_pointer,U T::*const volatile,true)
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_pointer.hpp boost/type_traits/is_pointer.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_pointer.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_pointer.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -42,9 +42,7 @@
+ 
+ namespace boost {
+ 
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_pointer,T,__is_pointer(T))
+-#elif !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
++#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+ 
+ namespace detail {
+ 
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_reference.hpp boost/type_traits/is_reference.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_reference.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_reference.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -1,6 +1,6 @@
+ 
+ //  (C) Copyright Dave Abrahams, Steve Cleary, Beman Dawes, 
+-//      Howard Hinnant and John Maddock 2000, 2010. 
++//      Howard Hinnant and John Maddock 2000. 
+ //  (C) Copyright Mat Marcus, Jesse Jones and Adobe Systems Inc 2001
+ 
+ //  Use, modification and distribution are subject to the Boost Software License,
+@@ -9,34 +9,105 @@
+ //
+ //  See http://www.boost.org/libs/type_traits for most recent version including documentation.
+ 
++//    Fixed is_pointer, is_reference, is_const, is_volatile, is_same, 
++//    is_member_pointer based on the Simulated Partial Specialization work 
++//    of Mat Marcus and Jesse Jones. See  http://opensource.adobe.com or 
++//    http://groups.yahoo.com/group/boost/message/5441 
++//    Some workarounds in here use ideas suggested from "Generic<Programming>: 
++//    Mappings between Types and Values" 
++//    by Andrei Alexandrescu (see http://www.cuj.com/experts/1810/alexandr.html).
++
++
+ #ifndef BOOST_TT_IS_REFERENCE_HPP_INCLUDED
+ #define BOOST_TT_IS_REFERENCE_HPP_INCLUDED
+ 
+ #include <boost/type_traits/config.hpp>
+-#include <boost/type_traits/is_lvalue_reference.hpp>
+-#include <boost/type_traits/is_rvalue_reference.hpp>
+-#include <boost/type_traits/ice.hpp>
++
++#ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
++#   include <boost/type_traits/detail/yes_no_type.hpp>
++#   include <boost/type_traits/detail/wrap.hpp>
++#endif
+ 
+ // should be the last #include
+ #include <boost/type_traits/detail/bool_trait_def.hpp>
+ 
+ namespace boost {
+ 
++#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
++
++BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_reference,T,false)
++BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_1(typename T,is_reference,T&,true)
++
++#if defined(__BORLANDC__) && !defined(__COMO__) && (__BORLANDC__ < 0x600)
++// these are illegal specialisations; cv-qualifies applied to
++// references have no effect according to [8.3.2p1],
++// C++ Builder requires them though as it treats cv-qualified
++// references as distinct types...
++BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_1(typename T,is_reference,T& const,true)
++BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_1(typename T,is_reference,T& volatile,true)
++BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_1(typename T,is_reference,T& const volatile,true)
++#endif
++
++#if defined(__GNUC__) && (__GNUC__ < 3)
++// these allow us to work around illegally cv-qualified reference
++// types.
++BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_1(typename T,is_reference,T const ,::boost::is_reference<T>::value)
++BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_1(typename T,is_reference,T volatile ,::boost::is_reference<T>::value)
++BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_1(typename T,is_reference,T const volatile ,::boost::is_reference<T>::value)
++// However, the above specializations confuse gcc 2.96 unless we also
++// supply these specializations for array types
++BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_2(typename T,unsigned long N,is_reference,T[N],false)
++BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_2(typename T,unsigned long N,is_reference,const T[N],false)
++BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_2(typename T,unsigned long N,is_reference,volatile T[N],false)
++BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_2(typename T,unsigned long N,is_reference,const volatile T[N],false)
++#endif
++
++#else
++
++#ifdef BOOST_MSVC
++#   pragma warning(push)
++#   pragma warning(disable: 4181 4097)
++#endif
++
+ namespace detail {
+ 
++using ::boost::type_traits::yes_type;
++using ::boost::type_traits::no_type;
++using ::boost::type_traits::wrap;
++
++template <class T> T&(* is_reference_helper1(wrap<T>) )(wrap<T>);
++char is_reference_helper1(...);
++
++template <class T> no_type is_reference_helper2(T&(*)(wrap<T>));
++yes_type is_reference_helper2(...);
++
+ template <typename T>
+ struct is_reference_impl
+ {
+-   BOOST_STATIC_CONSTANT(bool, value =
+-      (::boost::type_traits::ice_or<
+-         ::boost::is_lvalue_reference<T>::value, ::boost::is_rvalue_reference<T>::value
+-       >::value));
++    BOOST_STATIC_CONSTANT(
++        bool, value = sizeof(
++            ::boost::detail::is_reference_helper2(
++                ::boost::detail::is_reference_helper1(::boost::type_traits::wrap<T>()))) == 1
++        );
+ };
+ 
++BOOST_TT_AUX_BOOL_TRAIT_IMPL_SPEC1(is_reference,void,false)
++#ifndef BOOST_NO_CV_VOID_SPECIALIZATIONS
++BOOST_TT_AUX_BOOL_TRAIT_IMPL_SPEC1(is_reference,void const,false)
++BOOST_TT_AUX_BOOL_TRAIT_IMPL_SPEC1(is_reference,void volatile,false)
++BOOST_TT_AUX_BOOL_TRAIT_IMPL_SPEC1(is_reference,void const volatile,false)
++#endif
++
+ } // namespace detail
+ 
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_reference,T,::boost::detail::is_reference_impl<T>::value)
+ 
++#ifdef BOOST_MSVC
++#   pragma warning(pop)
++#endif
++
++#endif // BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
++
+ } // namespace boost
+ 
+ #include <boost/type_traits/detail/bool_trait_undef.hpp>
+Only in /home/bronf/usr/boost_1.46.0/include/boost/type_traits: is_rvalue_reference.hpp
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_same.hpp boost/type_traits/is_same.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_same.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/is_same.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -61,7 +61,7 @@
+ template< typename T1, typename T2 >
+ struct is_same_impl
+ {
+-    enum { value = boost::detail::is_same_part_1<T1>::template part_2<T2>::value };
++    enum { value = detail::is_same_part_1<T1>::template part_2<T2>::value };
+ };
+ 
+ #else // generic "no-partial-specialization" version
+@@ -81,7 +81,7 @@
+ 
+    BOOST_STATIC_CONSTANT(bool, value =
+       (::boost::type_traits::ice_and<
+-         (sizeof(type_traits::yes_type) == sizeof(boost::detail::is_same_tester(&t,&u))),
++         (sizeof(type_traits::yes_type) == sizeof(detail::is_same_tester(&t,&u))),
+          (::boost::is_reference<T>::value == ::boost::is_reference<U>::value),
+          (sizeof(T) == sizeof(U))
+         >::value));
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_signed.hpp boost/type_traits/is_signed.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_signed.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_signed.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -20,30 +20,15 @@
+ 
+ namespace boost {
+ 
+-#if !defined( __CODEGEARC__ )
+-
+ namespace detail{
+ 
+-#if !(defined(__EDG_VERSION__) && __EDG_VERSION__ <= 238) && !defined(BOOST_NO_INCLASS_MEMBER_INITIALIZATION)
+-
+-template <class T>
+-struct is_signed_values
+-{
+-   //
+-   // Note that we cannot use BOOST_STATIC_CONSTANT here, using enum's
+-   // rather than "real" static constants simply doesn't work or give
+-   // the correct answer.
+-   //
+-   typedef typename remove_cv<T>::type no_cv_t;
+-   static const no_cv_t minus_one = (static_cast<no_cv_t>(-1));
+-   static const no_cv_t zero = (static_cast<no_cv_t>(0));
+-};
++#if !(defined(__EDG_VERSION__) && __EDG_VERSION__ <= 238)
+ 
+ template <class T>
+ struct is_signed_helper
+ {
+    typedef typename remove_cv<T>::type no_cv_t;
+-   BOOST_STATIC_CONSTANT(bool, value = (!(::boost::detail::is_signed_values<T>::minus_one  > boost::detail::is_signed_values<T>::zero)));
++   BOOST_STATIC_CONSTANT(bool, value = (static_cast<no_cv_t>(-1) < 0));
+ };
+ 
+ template <bool integral_type>
+@@ -125,13 +110,7 @@
+ 
+ }
+ 
+-#endif // !defined( __CODEGEARC__ )
+-
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_signed,T,__is_signed(T))
+-#else
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_signed,T,::boost::detail::is_signed_imp<T>::value)
+-#endif
+ 
+ } // namespace boost
+ 
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_unsigned.hpp boost/type_traits/is_unsigned.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_unsigned.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_unsigned.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -20,29 +20,15 @@
+ 
+ namespace boost {
+ 
+-#if !defined( __CODEGEARC__ )
+-
+ namespace detail{
+ 
+-#if !(defined(__EDG_VERSION__) && __EDG_VERSION__ <= 238) && !defined(BOOST_NO_INCLASS_MEMBER_INITIALIZATION)
+-
+-template <class T>
+-struct is_unsigned_values
+-{
+-   //
+-   // Note that we cannot use BOOST_STATIC_CONSTANT here, using enum's
+-   // rather than "real" static constants simply doesn't work or give
+-   // the correct answer.
+-   //
+-   typedef typename remove_cv<T>::type no_cv_t;
+-   static const no_cv_t minus_one = (static_cast<no_cv_t>(-1));
+-   static const no_cv_t zero = (static_cast<no_cv_t>(0));
+-};
++#if !(defined(__EDG_VERSION__) && __EDG_VERSION__ <= 238)
+ 
+ template <class T>
+ struct is_ununsigned_helper
+ {
+-   BOOST_STATIC_CONSTANT(bool, value = (::boost::detail::is_unsigned_values<T>::minus_one > ::boost::detail::is_unsigned_values<T>::zero));
++   typedef typename remove_cv<T>::type no_cv_t;
++   BOOST_STATIC_CONSTANT(bool, value = (static_cast<no_cv_t>(-1) > 0));
+ };
+ 
+ template <bool integral_type>
+@@ -118,15 +104,10 @@
+ 
+ #endif
+ 
+-}
+ 
+-#endif // !defined( __CODEGEARC__ )
++}
+ 
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_unsigned,T,__is_unsigned(T))
+-#else
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_unsigned,T,::boost::detail::is_unsigned_imp<T>::value)
+-#endif
+ 
+ } // namespace boost
+ 
+Only in /home/bronf/usr/boost_1.46.0/include/boost/type_traits: is_virtual_base_of.hpp
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_void.hpp boost/type_traits/is_void.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_void.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/is_void.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -17,9 +17,6 @@
+ namespace boost {
+ 
+ //* is a type T void - is_void<T>
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_void,T,__is_void(T))
+-#else
+ BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_void,T,false)
+ BOOST_TT_AUX_BOOL_TRAIT_SPEC1(is_void,void,true)
+ 
+@@ -29,8 +26,6 @@
+ BOOST_TT_AUX_BOOL_TRAIT_SPEC1(is_void,void const volatile,true)
+ #endif
+ 
+-#endif  // non-CodeGear implementation
+-
+ } // namespace boost
+ 
+ #include <boost/type_traits/detail/bool_trait_undef.hpp>
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_volatile.hpp boost/type_traits/is_volatile.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/is_volatile.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/is_volatile.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -41,38 +41,17 @@
+ 
+ namespace boost {
+ 
+-namespace detail{
+-template <class T>
+-struct is_volatile_rval_filter
+-{
++#ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
++
++//* is a type T declared volatile - is_volatile<T>
+ #if BOOST_WORKAROUND(BOOST_MSVC, < 1400)
+-   BOOST_STATIC_CONSTANT(bool, value = ::boost::detail::cv_traits_imp<typename boost::remove_bounds<T>::type*>::is_volatile);
++   BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_volatile,T,::boost::detail::cv_traits_imp<typename boost::remove_bounds<T>::type*>::is_volatile)
+ #else
+-   BOOST_STATIC_CONSTANT(bool, value = ::boost::detail::cv_traits_imp<T*>::is_volatile);
+-#endif
+-};
+-#ifndef BOOST_NO_RVALUE_REFERENCES
+-//
+-// We can't filter out rvalue_references at the same level as
+-// references or we get ambiguities from msvc:
+-//
+-template <class T>
+-struct is_volatile_rval_filter<T&&>
+-{
+-   BOOST_STATIC_CONSTANT(bool, value = false);
+-};
++   BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_volatile,T,::boost::detail::cv_traits_imp<T*>::is_volatile)
+ #endif
+-}
+-
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_volatile,T,__is_volatile(T))
+-#elif !defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
+-
+-//* is a type T declared volatile - is_volatile<T>
+-BOOST_TT_AUX_BOOL_TRAIT_DEF1(is_volatile,T,::boost::detail::is_volatile_rval_filter<T>::value)
+ BOOST_TT_AUX_BOOL_TRAIT_PARTIAL_SPEC1_1(typename T,is_volatile,T&,false)
+ 
+-#if  defined(BOOST_ILLEGAL_CV_REFERENCES)
++#if defined(__BORLANDC__) && (__BORLANDC__ < 0x600)
+ // these are illegal specialisations; cv-qualifies applied to
+ // references have no effect according to [8.3.2p1],
+ // C++ Builder requires them though as it treats cv-qualified
+@@ -105,7 +84,7 @@
+     {
+         static T* t;
+         BOOST_STATIC_CONSTANT(bool, value = (
+-            sizeof(boost::detail::yes_type) == sizeof(boost::detail::is_volatile_tester(t))
++            sizeof(detail::yes_type) == sizeof(detail::is_volatile_tester(t))
+             ));
+     };
+ };
+@@ -117,7 +96,7 @@
+     {
+         static T t;
+         BOOST_STATIC_CONSTANT(bool, value = (
+-            sizeof(boost::detail::yes_type) == sizeof(boost::detail::is_volatile_tester(&t))
++            sizeof(detail::yes_type) == sizeof(detail::is_volatile_tester(&t))
+             ));
+     };
+ };
+Only in boost/type_traits: member_object.hpp
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_all_extents.hpp boost/type_traits/msvc/remove_all_extents.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_all_extents.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/msvc/remove_all_extents.hpp	2009-07-29 07:01:01.000000000 +0200
+@@ -36,7 +36,7 @@
+ 
+     template<typename T>
+     struct remove_all_extents {
+-        typedef typename boost::detail::remove_all_extents_impl_typeof<
++        typedef typename detail::remove_all_extents_impl_typeof<
+             boost::is_array<T>::value                
+         >::template inner<T,remove_all_extents<T> >::type type;
+         BOOST_MPL_AUX_LAMBDA_SUPPORT(1,remove_all_extents,T)
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_bounds.hpp boost/type_traits/msvc/remove_bounds.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_bounds.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/msvc/remove_bounds.hpp	2009-07-29 07:01:01.000000000 +0200
+@@ -32,7 +32,7 @@
+ 
+     template<typename T>
+     struct remove_bounds {
+-        typedef typename boost::detail::remove_bounds_impl_typeof<
++        typedef typename detail::remove_bounds_impl_typeof<
+             boost::is_array<T>::value                
+         >::template inner<T,remove_bounds<T> >::type type;
+         BOOST_MPL_AUX_LAMBDA_SUPPORT(1,remove_bounds,T)
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_const.hpp boost/type_traits/msvc/remove_const.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_const.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/msvc/remove_const.hpp	2009-07-29 07:01:01.000000000 +0200
+@@ -124,7 +124,7 @@
+ 
+     template<typename T>
+     struct remove_const {
+-        typedef boost::detail::remove_const_impl_typeof<
++        typedef detail::remove_const_impl_typeof<
+             boost::is_pointer<T>::value,
+             boost::is_array<T>::value,
+             boost::is_const<T>::value,
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_cv.hpp boost/type_traits/msvc/remove_cv.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_cv.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/msvc/remove_cv.hpp	2009-07-29 07:01:01.000000000 +0200
+@@ -171,7 +171,7 @@
+ 
+     template<typename T>
+     struct remove_cv {
+-        typedef boost::detail::remove_cv_impl_typeof<
++        typedef detail::remove_cv_impl_typeof<
+             boost::is_pointer<T>::value,
+             boost::is_array<T>::value,
+             boost::is_const<T>::value,
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_extent.hpp boost/type_traits/msvc/remove_extent.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_extent.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/msvc/remove_extent.hpp	2009-07-29 07:01:01.000000000 +0200
+@@ -32,7 +32,7 @@
+ 
+     template<typename T>
+     struct remove_extent {
+-        typedef typename boost::detail::remove_extent_impl_typeof<
++        typedef typename detail::remove_extent_impl_typeof<
+             boost::is_array<T>::value                
+         >::template inner<T,remove_extent<T> >::type type;
+         BOOST_MPL_AUX_LAMBDA_SUPPORT(1,remove_extent,T)
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_pointer.hpp boost/type_traits/msvc/remove_pointer.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_pointer.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/msvc/remove_pointer.hpp	2009-07-29 07:01:01.000000000 +0200
+@@ -32,7 +32,7 @@
+ 
+     template<typename T>
+     struct remove_pointer {
+-        typedef typename boost::detail::remove_pointer_impl_typeof<
++        typedef typename detail::remove_pointer_impl_typeof<
+             boost::is_pointer<T>::value
+         >::template inner<T,remove_pointer<T> >::type type;
+         BOOST_MPL_AUX_LAMBDA_SUPPORT(1,remove_pointer,T)
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_reference.hpp boost/type_traits/msvc/remove_reference.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_reference.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/msvc/remove_reference.hpp	2009-07-29 07:01:01.000000000 +0200
+@@ -32,7 +32,7 @@
+     
+     template<typename T>
+     struct remove_reference {
+-        typedef typename boost::detail::remove_reference_impl_typeof<
++        typedef typename detail::remove_reference_impl_typeof<
+             boost::is_reference<T>::value
+         >::template inner<T,remove_reference<T> >::type type;
+         BOOST_MPL_AUX_LAMBDA_SUPPORT(1,remove_reference,T)
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_volatile.hpp boost/type_traits/msvc/remove_volatile.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/msvc/remove_volatile.hpp	2011-02-26 10:33:58.000000000 +0100
++++ boost/type_traits/msvc/remove_volatile.hpp	2009-07-29 07:01:01.000000000 +0200
+@@ -124,7 +124,7 @@
+ 
+     template<typename T>
+     struct remove_volatile {
+-        typedef boost::detail::remove_volatile_impl_typeof<
++        typedef detail::remove_volatile_impl_typeof<
+             boost::is_pointer<T>::value,
+             boost::is_array<T>::value,
+             boost::is_const<T>::value,
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/rank.hpp boost/type_traits/rank.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/rank.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/rank.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -15,8 +15,6 @@
+ 
+ namespace boost {
+ 
+-#if !defined( __CODEGEARC__ )
+-
+ namespace detail{
+ 
+ template <class T, std::size_t N>
+@@ -74,13 +72,7 @@
+ #endif
+ }
+ 
+-#endif // !defined( __CODEGEARC__ )
+-
+-#if defined( __CODEGEARC__ )
+-BOOST_TT_AUX_SIZE_T_TRAIT_DEF1(rank,T,__array_rank(T))
+-#else
+ BOOST_TT_AUX_SIZE_T_TRAIT_DEF1(rank,T,(::boost::detail::rank_imp<T,0>::value))
+-#endif
+ 
+ } // namespace boost
+ 
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_all_extents.hpp boost/type_traits/remove_all_extents.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_all_extents.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/remove_all_extents.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -31,7 +31,7 @@
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_2(typename T,std::size_t N,remove_all_extents,T const[N],typename boost::remove_all_extents<T const>::type type)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_2(typename T,std::size_t N,remove_all_extents,T volatile[N],typename boost::remove_all_extents<T volatile>::type type)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_2(typename T,std::size_t N,remove_all_extents,T const volatile[N],typename boost::remove_all_extents<T const volatile>::type type)
+-#if !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x610)) && !defined(__IBMCPP__) &&  !BOOST_WORKAROUND(__DMC__, BOOST_TESTED_AT(0x840))
++#if !BOOST_WORKAROUND(__BORLANDC__, < 0x600) && !defined(__IBMCPP__) &&  !BOOST_WORKAROUND(__DMC__, BOOST_TESTED_AT(0x840))
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_all_extents,T[],typename boost::remove_all_extents<T>::type)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_all_extents,T const[],typename boost::remove_all_extents<T const>::type)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_all_extents,T volatile[],typename boost::remove_all_extents<T volatile>::type)
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_bounds.hpp boost/type_traits/remove_bounds.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_bounds.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/remove_bounds.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -31,7 +31,7 @@
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_2(typename T,std::size_t N,remove_bounds,T const[N],T const type)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_2(typename T,std::size_t N,remove_bounds,T volatile[N],T volatile type)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_2(typename T,std::size_t N,remove_bounds,T const volatile[N],T const volatile type)
+-#if !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x610)) && !defined(__IBMCPP__) &&  !BOOST_WORKAROUND(__DMC__, BOOST_TESTED_AT(0x840))
++#if !BOOST_WORKAROUND(__BORLANDC__, < 0x600) && !defined(__IBMCPP__) &&  !BOOST_WORKAROUND(__DMC__, BOOST_TESTED_AT(0x840))
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_bounds,T[],T)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_bounds,T const[],T const)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_bounds,T volatile[],T volatile)
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_const.hpp boost/type_traits/remove_const.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_const.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/remove_const.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -54,18 +54,6 @@
+         >::type type;
+ };
+ 
+-#ifndef BOOST_NO_RVALUE_REFERENCES
+-//
+-// We can't filter out rvalue_references at the same level as
+-// references or we get ambiguities from msvc:
+-//
+-template <typename T>
+-struct remove_const_impl<T&&>
+-{
+-    typedef T&& type;
+-};
+-#endif
+-
+ } // namespace detail
+ 
+ // * convert a type T to non-const type - remove_const<T>
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_cv.hpp boost/type_traits/remove_cv.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_cv.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/remove_cv.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -27,32 +27,10 @@
+ 
+ namespace boost {
+ 
+-namespace detail{
+-
+-template <class T>
+-struct rvalue_ref_filter_rem_cv
+-{
+-   typedef typename boost::detail::cv_traits_imp<T*>::unqualified_type type;
+-};
+-
+-#ifndef BOOST_NO_RVALUE_REFERENCES
+-//
+-// We can't filter out rvalue_references at the same level as
+-// references or we get ambiguities from msvc:
+-//
+-template <class T>
+-struct rvalue_ref_filter_rem_cv<T&&>
+-{
+-   typedef T&& type;
+-};
+-#endif
+-
+-}
+-
+ #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+ 
+ //  convert a type T to a non-cv-qualified type - remove_cv<T>
+-BOOST_TT_AUX_TYPE_TRAIT_DEF1(remove_cv,T,typename boost::detail::rvalue_ref_filter_rem_cv<T>::type)
++BOOST_TT_AUX_TYPE_TRAIT_DEF1(remove_cv,T,typename boost::detail::cv_traits_imp<T*>::unqualified_type)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_cv,T&,T&)
+ #if !defined(BOOST_NO_ARRAY_TYPE_SPECIALIZATIONS)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_2(typename T,std::size_t N,remove_cv,T const[N],T type[N])
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_extent.hpp boost/type_traits/remove_extent.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_extent.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/remove_extent.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -31,7 +31,7 @@
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_2(typename T,std::size_t N,remove_extent,T const[N],T const type)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_2(typename T,std::size_t N,remove_extent,T volatile[N],T volatile type)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_2(typename T,std::size_t N,remove_extent,T const volatile[N],T const volatile type)
+-#if !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x610)) && !defined(__IBMCPP__) &&  !BOOST_WORKAROUND(__DMC__, BOOST_TESTED_AT(0x840))
++#if !BOOST_WORKAROUND(__BORLANDC__, < 0x600) && !defined(__IBMCPP__) &&  !BOOST_WORKAROUND(__DMC__, BOOST_TESTED_AT(0x840))
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_extent,T[],T)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_extent,T const[],T const)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_extent,T volatile[],T volatile)
+Only in boost/type_traits: remove_member_pointer.hpp
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_reference.hpp boost/type_traits/remove_reference.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_reference.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/remove_reference.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -24,30 +24,10 @@
+ 
+ #ifndef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
+ 
+-namespace detail{
+-//
+-// We can't filter out rvalue_references at the same level as
+-// references or we get ambiguities from msvc:
+-//
+-template <class T>
+-struct remove_rvalue_ref
+-{
+-   typedef T type;
+-};
+-#ifndef BOOST_NO_RVALUE_REFERENCES
+-template <class T>
+-struct remove_rvalue_ref<T&&>
+-{
+-   typedef T type;
+-};
+-#endif
+-
+-} // namespace detail
+-
+-BOOST_TT_AUX_TYPE_TRAIT_DEF1(remove_reference,T,typename boost::detail::remove_rvalue_ref<T>::type)
++BOOST_TT_AUX_TYPE_TRAIT_DEF1(remove_reference,T,T)
+ BOOST_TT_AUX_TYPE_TRAIT_PARTIAL_SPEC1_1(typename T,remove_reference,T&,T)
+ 
+-#if defined(BOOST_ILLEGAL_CV_REFERENCES)
++#if defined(__BORLANDC__) && (__BORLANDC__ < 0x600)
+ // these are illegal specialisations; cv-qualifies applied to
+ // references have no effect according to [8.3.2p1],
+ // C++ Builder requires them though as it treats cv-qualified
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_volatile.hpp boost/type_traits/remove_volatile.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/remove_volatile.hpp	2011-02-26 10:33:34.000000000 +0100
++++ boost/type_traits/remove_volatile.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -53,17 +53,6 @@
+         >::type type;
+ };
+ 
+-//
+-// We can't filter out rvalue_references at the same level as
+-// references or we get ambiguities from msvc:
+-//
+-#ifndef BOOST_NO_RVALUE_REFERENCES
+-template <typename T>
+-struct remove_volatile_impl<T&&>
+-{
+-    typedef T&& type;
+-};
+-#endif
+ } // namespace detail
+ 
+ // * convert a type T to a non-volatile type - remove_volatile<T>
+diff -r -u /home/bronf/usr/boost_1.46.0/include/boost/type_traits/type_with_alignment.hpp boost/type_traits/type_with_alignment.hpp
+--- /home/bronf/usr/boost_1.46.0/include/boost/type_traits/type_with_alignment.hpp	2011-02-26 10:33:35.000000000 +0100
++++ boost/type_traits/type_with_alignment.hpp	2009-07-29 07:01:04.000000000 +0200
+@@ -286,43 +286,43 @@
+ template<> class type_with_alignment<8>  
+ { 
+    typedef mpl::if_c<
+-      ::boost::alignment_of<boost::detail::max_align>::value < 8,
++      ::boost::alignment_of<detail::max_align>::value < 8,
+       align::a8,
+-      boost::detail::type_with_alignment_imp<8> >::type t1; 
++      detail::type_with_alignment_imp<8> >::type t1; 
+ public: 
+    typedef t1::type type;
+ };
+ template<> class type_with_alignment<16> 
+ { 
+    typedef mpl::if_c<
+-      ::boost::alignment_of<boost::detail::max_align>::value < 16,
++      ::boost::alignment_of<detail::max_align>::value < 16,
+       align::a16,
+-      boost::detail::type_with_alignment_imp<16> >::type t1; 
++      detail::type_with_alignment_imp<16> >::type t1; 
+ public: 
+    typedef t1::type type;
+ };
+ template<> class type_with_alignment<32> 
+ { 
+    typedef mpl::if_c<
+-      ::boost::alignment_of<boost::detail::max_align>::value < 32,
++      ::boost::alignment_of<detail::max_align>::value < 32,
+       align::a32,
+-      boost::detail::type_with_alignment_imp<32> >::type t1; 
++      detail::type_with_alignment_imp<32> >::type t1; 
+ public: 
+    typedef t1::type type;
+ };
+ template<> class type_with_alignment<64> {
+    typedef mpl::if_c<
+-      ::boost::alignment_of<boost::detail::max_align>::value < 64,
++      ::boost::alignment_of<detail::max_align>::value < 64,
+       align::a64,
+-      boost::detail::type_with_alignment_imp<64> >::type t1; 
++      detail::type_with_alignment_imp<64> >::type t1; 
+ public: 
+    typedef t1::type type;
+ };
+ template<> class type_with_alignment<128> {
+    typedef mpl::if_c<
+-      ::boost::alignment_of<boost::detail::max_align>::value < 128,
++      ::boost::alignment_of<detail::max_align>::value < 128,
+       align::a128,
+-      boost::detail::type_with_alignment_imp<128> >::type t1; 
++      detail::type_with_alignment_imp<128> >::type t1; 
+ public: 
+    typedef t1::type type;
+ };
+@@ -357,12 +357,10 @@
+ 
+ typedef ::boost::align::a16 max_align;
+ 
+-//#if ! BOOST_WORKAROUND(__CODEGEARC__, BOOST_TESTED_AT(0x610))
+ BOOST_TT_AUX_BOOL_TRAIT_IMPL_SPEC1(is_pod,::boost::align::a2,true)
+ BOOST_TT_AUX_BOOL_TRAIT_IMPL_SPEC1(is_pod,::boost::align::a4,true)
+ BOOST_TT_AUX_BOOL_TRAIT_IMPL_SPEC1(is_pod,::boost::align::a8,true)
+ BOOST_TT_AUX_BOOL_TRAIT_IMPL_SPEC1(is_pod,::boost::align::a16,true)
+-//#endif
+ }
+ 
+ template <std::size_t N> struct type_with_alignment
